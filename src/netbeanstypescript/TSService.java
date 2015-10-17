@@ -426,8 +426,8 @@ public class TSService {
             int length = ((Number) err.get("length")).intValue();
             String messageText = (String) err.get("messageText");
             int category = ((Number) err.get("category")).intValue();
-            //int code = ((Number) err.get("code")).intValue();
-            errors.add(new DefaultError(null, messageText, null,
+            int code = ((Number) err.get("code")).intValue();
+            errors.add(new DefaultError("TS" + code, messageText, null,
                     fo, start, start + length, false,
                     category == 0 ? Severity.WARNING : Severity.ERROR));
         }

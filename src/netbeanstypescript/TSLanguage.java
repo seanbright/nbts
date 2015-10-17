@@ -110,4 +110,9 @@ public class TSLanguage extends DefaultLanguageConfig {
     public boolean hasFormatter() { return true; }
     @Override
     public Formatter getFormatter() { return new TSFormatter(); }
+
+    @Override
+    public boolean hasHintsProvider() { return true; }
+    @Override
+    public HintsProvider getHintsProvider() { return new TSHintsProvider(); }
 }

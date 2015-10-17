@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+
+    <folder name="csl-hints">
+        <folder name="text">
+            <folder name="typescript">
+                <folder name="errors">
+                    <file name="netbeanstypescript-TSHintsProvider$ImplementAllAbstractMethods.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
     <folder name="Editors">
         <folder name="text">
             <folder name="typescript">
