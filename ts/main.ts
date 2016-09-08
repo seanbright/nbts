@@ -417,6 +417,26 @@ class Program {
                 if (symbol) {
                     var type = typeInfoResolver.getTypeOfSymbolAtLocation(symbol, node);
                     res.type = typeInfoResolver.typeToString(type);
+                    var classSym = symbol.parent;
+                    if (classSym) {
+                        var classType = typeInfoResolver.getDeclaredTypeOfSymbol(classSym);
+                        var baseTypes = typeInfoResolver.getBaseTypes(<ts.InterfaceType>classType);
+                        var overrides: any[] = [];
+                        baseTypes.forEach(baseType => {
+                            var baseSym = typeInfoResolver.getPropertyOfType(baseType, symbol.name);
+                            if (baseSym) {
+                                var baseDecl = baseSym.valueDeclaration;
+                                var baseSource = baseDecl.getSourceFile();
+                                overrides.push({
+                                    fileName: baseSource.fileName,
+                                    start: ts.skipTrivia(baseSource.text, baseDecl.pos),
+                                })
+                            }
+                        });
+                        if (overrides.length) {
+                            res.overrides = overrides;
+                        }
+                    }
                 }
                 results.push(res);
                 return res;

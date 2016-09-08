@@ -43,10 +43,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax.swing.ImageIcon;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -54,22 +56,25 @@ import org.netbeans.modules.csl.spi.ParserResult;
  */
 public class TSStructureScanner implements StructureScanner {
 
-    private static class TSStructureItem extends TSNameKindModifiers implements StructureItem {
+    static class TSStructureItem extends TSElementHandle implements StructureItem {
         String typeExtends;
         String type;
         int start;
         int end;
+        Object overrides;
 
         TSStructureItem parent;
         int numOfName;
         List<TSStructureItem> children;
 
         TSStructureItem(JSONObject item) {
-            super(item);
+            super(OffsetRange.NONE /*XXX*/, item);
             typeExtends = (String) item.get("extends");
             type = (String) item.get("type");
             start = ((Number) item.get("start")).intValue();
             end = ((Number) item.get("end")).intValue();
+            overrides = item.get("overrides");
+            textSpan = new OffsetRange(start, end);
         }
 
         @Override
@@ -98,7 +103,7 @@ public class TSStructureScanner implements StructureScanner {
             return hf.getText();
         }
         @Override
-        public ElementHandle getElementHandle() { return null; }
+        public ElementHandle getElementHandle() { return this; }
         @Override
         public boolean isLeaf() { return children.isEmpty(); }
         @Override
