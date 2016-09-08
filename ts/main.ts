@@ -400,7 +400,7 @@ class Program {
         if (! sourceFile) return null;
         var typeInfoResolver = program.getTypeChecker();
 
-        function buildResults(topNode: ts.Node, inFunction: boolean) {
+        function buildResults(topNode: ts.Node, inFunction: boolean, baseTypes?: ts.Type[]) {
             var results: any[] = [];
             function add(node: ts.Declaration, kind: string, symbol?: ts.Symbol) {
                 var name = node.kind === SK.Constructor ? "constructor" : (<any>node.name).text;
@@ -417,11 +417,9 @@ class Program {
                 if (symbol) {
                     var type = typeInfoResolver.getTypeOfSymbolAtLocation(symbol, node);
                     res.type = typeInfoResolver.typeToString(type);
-                    var classSym = symbol.parent;
-                    if (classSym) {
-                        var classType = typeInfoResolver.getDeclaredTypeOfSymbol(classSym);
-                        var baseTypes = typeInfoResolver.getBaseTypes(<ts.InterfaceType>classType);
+                    if (baseTypes && symbol.name) {
                         var overrides: any[] = [];
+                        // TODO: may be static...
                         baseTypes.forEach(baseType => {
                             var baseSym = typeInfoResolver.getPropertyOfType(baseType, symbol.name);
                             if (baseSym) {
@@ -430,7 +428,9 @@ class Program {
                                 overrides.push({
                                     fileName: baseSource.fileName,
                                     start: ts.skipTrivia(baseSource.text, baseDecl.pos),
-                                })
+                                    wasAbstract: !!(baseDecl.flags & ts.NodeFlags.Abstract ||
+                                                    baseType.flags & ts.TypeFlags.Interface)
+                                });
                             }
                         });
                         if (overrides.length) {
@@ -492,7 +492,13 @@ class Program {
                         break;
                     case SK.ClassDeclaration:
                         var res = addWithHeritage(<ts.ClassDeclaration>node, SEK.classElement);
-                        res.children = buildResults(node, false);
+                        var classType = typeInfoResolver.getDeclaredTypeOfSymbol(node.symbol);
+                        var baseTypes = typeInfoResolver.getBaseTypes(<ts.InterfaceType>classType);
+                        var implemented = ts.getClassImplementsHeritageClauseElements(<ts.ClassDeclaration>node);
+                        implemented && implemented.forEach(iface => {
+                            baseTypes.push(typeInfoResolver.getTypeAtLocation(iface));
+                        });
+                        res.children = buildResults(node, false, baseTypes);
                         break;
                     case SK.InterfaceDeclaration:
                         addWithHeritage(<ts.InterfaceDeclaration>node, SEK.interfaceElement);

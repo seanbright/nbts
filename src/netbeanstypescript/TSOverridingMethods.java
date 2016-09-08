@@ -2,6 +2,8 @@ package netbeanstypescript;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 import netbeanstypescript.TSStructureScanner.TSStructureItem;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -28,9 +30,33 @@ public class TSOverridingMethods implements OverridingMethods {
                     JSONObject override0 = (JSONObject) override;
                     final String fileName = (String) override0.get("fileName");
                     final int start = ((Number) override0.get("start")).intValue();
+                    final boolean wasAbstract = (Boolean) override0.get("wasAbstract");
                     list.add(new AlternativeLocation() {
                         @Override
-                        public ElementHandle getElement() { return si; }
+                        public ElementHandle getElement() {
+                            return new ElementHandle() {
+                                @Override
+                                public FileObject getFileObject() { return null; }
+                                @Override
+                                public String getMimeType() { return null; }
+                                @Override
+                                public String getName() { return si.name; }
+                                @Override
+                                public String getIn() { return null; }
+                                @Override
+                                public ElementKind getKind() { return si.kind; }
+                                @Override
+                                public Set<Modifier> getModifiers() {
+                                    return wasAbstract
+                                            ? Collections.singleton(Modifier.ABSTRACT)
+                                            : Collections.<Modifier>emptySet();
+                                }
+                                @Override
+                                public boolean signatureEquals(ElementHandle eh) { return false; }
+                                @Override
+                                public OffsetRange getOffsetRange(ParserResult pr) { return OffsetRange.NONE; }
+                            };
+                        }
                         @Override
                         public String getDisplayHtml(HtmlFormatter hf) {
                             return fileName + "@" + start;
